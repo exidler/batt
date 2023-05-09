@@ -83,6 +83,28 @@ void sleepCallBack(void* refCon, io_service_t service, natural_t messageType, vo
     }
 }
 
+// ClamShellSleep code from https://github.com/x74353/CDMManager-Sample
+// thanks to William Gustafson (https://github.com/x74353)
+static IOReturn RootDomain_SetDisableClamShellSleep (io_connect_t root_domain, bool disable)
+{
+    uint32_t num_outputs = 0;
+    uint32_t input_count = 1;
+    uint64_t input[input_count];
+    input[0] = (uint64_t) { disable ? 1 : 0 };
+    return IOConnectCallScalarMethod(root_domain, kPMSetClamshellSleepState, input, input_count, NULL, &num_outputs);
+}
+
+bool _disableLidSleep(bool disable)
+{
+    io_connect_t connection = IO_OBJECT_NULL;
+    io_service_t pmRootDomain = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPMrootDomain"));
+    IOServiceOpen (pmRootDomain, current_task(), 0, &connection);
+    if (connection == IO_OBJECT_NULL) return false;
+    bool ok = RootDomain_SetDisableClamShellSleep(connection, disable) == KERN_SUCCESS;
+    IOServiceClose(connection);
+    return ok;
+}
+
 int ListenNotifications()
 {
     // notification port allocated by IORegisterForSystemPower

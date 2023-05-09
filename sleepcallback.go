@@ -18,6 +18,10 @@ var (
 	postSleepLoopDelaySeconds = 120
 )
 
+func disableLidSleep(disable bool) {
+	C._disableLidSleep(C.bool(disable))
+}
+
 //export canSystemSleepCallback
 func canSystemSleepCallback() {
 	/* Idle sleep is about to kick in. This message will not be sent for forced sleep.
